@@ -1,0 +1,21 @@
+{
+  "name": "wt9510/cm-tool",
+  "description": "wutao9510 personally tools.",
+  "minimum-stability": "dev",
+  "license": "MIT",
+  "type": "library",
+  "authors": [
+    {
+      "name": "wutao",
+      "email": "yuycc@foxmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Cm\\": "lib/"
+    }
+  }
+}
