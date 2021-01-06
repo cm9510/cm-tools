@@ -7,4 +7,9 @@ class Hello
 	{
 		exit('Hello world !');
 	}
+
+	public static function run()
+	{
+		exit('running......');
+	}
 }
