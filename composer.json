@@ -1,21 +1,28 @@
 {
   "name": "wt9510/cm-test",
-  "description": "wutao9510 personally tools.",
+  "description": "personally tools.",
   "minimum-stability": "dev",
   "license": "MIT",
   "type": "library",
   "authors": [
     {
       "name": "wutao",
-      "email": "yuycc@foxmail.com"
+      "email": "yuycc@foxmail.com",
+      "qq": "2621472136"
     }
   ],
   "require": {
-    "php": ">=7.0"
+    "php": ">=7.0",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "ext-openssl": "*"
   },
   "autoload": {
     "psr-4": {
       "Cm\\": "lib/"
-    }
+    },
+    "files": [
+      "lib/functions.php"
+    ]
   }
 }
