@@ -6,7 +6,7 @@ use Cm\CmBase\Traits\Singleton;
 class HttpRequest
 {
 	use Singleton{
-		instance as public instance;
+		instance as public getInstance;
 	}
 
 	/**
