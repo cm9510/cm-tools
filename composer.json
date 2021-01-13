@@ -12,17 +12,17 @@
     }
   ],
   "require": {
-    "php": ">=7.0",
+    "php": ">=7.1",
+    "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-json": "*",
-    "ext-openssl": "*"
+    "ext-openssl": "*",
+    "ext-simplexml": "*",
+    "ext-libxml": "*"
   },
   "autoload": {
     "psr-4": {
       "Cm\\": "lib/"
-    },
-    "files": [
-      "lib/functions.php"
-    ]
+    }
   }
 }
