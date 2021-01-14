@@ -2,8 +2,7 @@
 namespace Cm\CmOpen\Wechat;
 
 use Cm\CmBase\Traits\CallStatic;
-use Cm\CmTool\HttpRequest;
-use Cm\CmTool\Tools;
+use Cm\CmTool\{HttpRequest, Tools};
 
 final class WxPay
 {

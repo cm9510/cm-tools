@@ -1,8 +1,12 @@
 <?php
 namespace Cm\CmTool;
 
+use Cm\CmBase\Traits\Singleton;
+
 class Tools
 {
+	use Singleton;
+
 	/**
 	 * array to xml
 	 * @param $data
