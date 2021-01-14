@@ -146,4 +146,53 @@ class Tools
 		}
 		return false;
 	}
+
+	/**
+	 * 写日志
+	 * @param string $storePath 保存路径
+	 * @param string $msg 内容
+	 * @param bool $oneFile 是否写成一个文件
+	 * @return bool
+	 */
+	public static function log(string $storePath, string $msg, bool $oneFile = false):bool
+	{
+		if (empty((trim($msg)))){
+			return false;
+		}
+		$logFile = $oneFile ? 'cm_logs_all.txt' : 'cm_logs_'.date('Y-m-d').'txt';
+		$logTime = $oneFile ? date('Y-m-d/H:i:s') : date('H:i:s');
+		if($storePath && is_dir($storePath)){
+			$msg = '['.date_default_timezone_get().' > '.$logTime.'] '.$msg."\n";
+			file_put_contents($logFile, $msg, FILE_APPEND);
+			unset($logFile,$logTime,$msg);
+			return true;
+		}
+		unset($logFile,$logTime);
+		return false;
+	}
+
+	/**
+	 * xml转array
+	 * @param string $xml
+	 * @param int $xmlType 1xml字符串，2xml文件
+	 * @return false|mixed
+	 */
+	public static function xmlToArray(string $xml, int $xmlType = 1)
+	{
+		if (empty($xml)) {
+			return false;
+		}
+		switch ($xmlType){
+			case 1:
+				$result = simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
+				break;
+			case 2:
+				$result = simplexml_load_file($xml);
+				break;
+			default:
+				return  false;
+		}
+		return json_decode(json_encode($result), true);
+	}
+
 }

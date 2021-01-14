@@ -18,7 +18,8 @@
     "ext-json": "*",
     "ext-openssl": "*",
     "ext-simplexml": "*",
-    "ext-libxml": "*"
+    "ext-libxml": "*",
+    "ext-redis": "*"
   },
   "autoload": {
     "psr-4": {
