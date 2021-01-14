@@ -2,6 +2,7 @@
 namespace Cm\CmOpen\Wechat;
 
 use Cm\CmBase\Traits\Singleton;
+use Cm\CmTool\HttpRequest;
 use Cm\CmTool\Tools;
 
 final class WechatUtil
@@ -9,6 +10,7 @@ final class WechatUtil
 	use Singleton;
 
 	const AUTH_TAG_LENGTH_BYTE = 16;
+
 
 	/**
 	 * 组装微信支付 Authorization
@@ -18,7 +20,7 @@ final class WechatUtil
 	 * @param string $body 请求参数
 	 * @return string
 	 */
-	public function BuildPayRequestSign(string $method, string $url, array $mchInfo, string $body = ''):string
+	public function buildPayRequestSign(string $method, string $url, array $mchInfo, string $body = ''):string
 	{
 		$time = $_SERVER['REQUEST_TIME'] ?? time();
 		$nonceStr = Tools::getRandString(24);

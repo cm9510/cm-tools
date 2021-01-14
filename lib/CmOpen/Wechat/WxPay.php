@@ -33,7 +33,7 @@ final class WxPay
 	public static $appId = '';
 
 	# 直连商户号 如：1230000109
-	public static $mchid = '';
+	public static $mchId = '';
 
 	# 商品描述 如：Image形象店-深圳腾大-QQ公仔
 	public static $description = '';
@@ -107,7 +107,7 @@ final class WxPay
 
 			return [
 			  'appid'=> self::$appId,
-			  'partnerid'=> self::$mchid,
+			  'partnerid'=> self::$mchId,
 			  'prepayid'=> $result['prepay_id'],
 			  'timestamp'=> $time,
 			  'noncestr'=> $nonceStr,
@@ -167,7 +167,18 @@ final class WxPay
 		}elseif ($type == WechatConst::TRADE_QUERY_WAY_OTN){
 			$url = '/v3/pay/transactions/out-trade-no/'.$number;
 		}
-		$result = HttpRequest::instance()->httpGet(self::$gateway.$url, ['mchid'=>self::$mchid]);
+		$header = [
+		  'Content-Type: application/json;charset=UTF-8',
+		  'Accept: application/json',
+		  'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
+		];
+		$header[] = WechatUtil::instance()->buildPayRequestSign('GET',$url, [
+		  'private_key_path'=> self::$privateKeyPath,
+		  'mch_id'=>self::$mchId,
+		  'serial_no'=>self::$serialNo
+		]);
+
+		$result = HttpRequest::instance()->httpGet(self::$gateway.$url, ['mchid'=>self::$mchId],['header'=>$header]);
 		$result = json_decode($result,true);
 		if(isset($result['appid'])){
 			unset($result['appid']);
@@ -188,7 +199,7 @@ final class WxPay
 	{
 		$body = [
 			'appid'=> self::$appId,
-			'mchid'=> self::$mchid,
+			'mchid'=> self::$mchId,
 			'out_trade_no'=> $outTradeNo,
 			'notify_url'=> self::$notifyUrl,
 			'amount'=> ['currency'=>self::$currency, 'total'=>$total],
@@ -231,12 +242,12 @@ final class WxPay
 		  'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
 		];
 		try {
-			$header[] = WechatUtil::instance()->BuildPayRequestSign(
+			$header[] = WechatUtil::instance()->buildPayRequestSign(
 			  self::$method,
 			  self::$url,
 			  [
 				'private_key_path'=>self::$privateKeyPath,
-				'mch_id'=>self::$mchid,
+				'mch_id'=>self::$mchId,
 				'serial_no'=>self::$serialNo
 			  ],
 			  json_encode($body,JSON_UNESCAPED_UNICODE)
@@ -264,7 +275,7 @@ final class WxPay
 	{
 		$params = [
 		  'appid'=> self::$appId,
-		  'mch_id'=> self::$mchid,
+		  'mch_id'=> self::$mchId,
 		  'nonce_str'=> Tools::getRandString(24),
 		  'transaction_id'=> $transactionId,
 		  'out_refund_no'=> $outRefundNo,

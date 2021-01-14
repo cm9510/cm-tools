@@ -159,11 +159,11 @@ class Tools
 		if (empty((trim($msg)))){
 			return false;
 		}
-		$logFile = $oneFile ? 'cm_logs_all.txt' : 'cm_logs_'.date('Y-m-d').'txt';
+		$logFile = $oneFile ? 'cm_logs_all.txt' : 'cm_logs_'.date('Y-m-d').'.txt';
 		$logTime = $oneFile ? date('Y-m-d/H:i:s') : date('H:i:s');
 		if($storePath && is_dir($storePath)){
 			$msg = '['.date_default_timezone_get().' > '.$logTime.'] '.$msg."\n";
-			file_put_contents($logFile, $msg, FILE_APPEND);
+			file_put_contents($storePath.$logFile, $msg, FILE_APPEND);
 			unset($logFile,$logTime,$msg);
 			return true;
 		}
