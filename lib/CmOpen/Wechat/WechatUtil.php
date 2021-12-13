@@ -2,7 +2,6 @@
 namespace Cm\CmOpen\Wechat;
 
 use Cm\CmBase\Traits\Singleton;
-use Cm\CmTool\HttpRequest;
 use Cm\CmTool\Tools;
 
 final class WechatUtil
@@ -10,7 +9,6 @@ final class WechatUtil
 	use Singleton;
 
 	const AUTH_TAG_LENGTH_BYTE = 16;
-
 
 	/**
 	 * 组装微信支付 Authorization
@@ -88,6 +86,6 @@ final class WechatUtil
 			return self::$instance;
 		}
 		self::$instance = new self;
-		return  self::$instance;
+		return self::$instance;
 	}
 }

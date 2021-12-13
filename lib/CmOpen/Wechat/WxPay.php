@@ -9,83 +9,91 @@ final class WxPay
 	use CallStatic;
 
 	# 商户私钥路径 如：/public/pay/apiclient_key.pem
-	public static $privateKeyPath = '';
+	public $privateKeyPath = '';
 
 	# 商户证书路径 如：/public/pay/apiclient_cert.pem
-	public static $certPath = '';
+	public $certPath = '';
 
-	# 商户密钥
-	public static $secret = '';
+	# 商户密钥(API_V3_key)
+	public $secret = '';
 
 	# 商户API证书序列号
-	public static $serialNo = '';
+	public $serialNo = '';
 
 	# 网关
-	public static $gateway = 'https://api.mch.weixin.qq.com';
+	public $gateway = 'https://api.mch.weixin.qq.com';
 
 	# 路径
-	public static $url = '';
+	public $url = '';
 
 	# HTTP请求的方法
-	public static $method = 'POST';
+	public $method = 'POST';
 
 	# 应用ID 如：wxd678efh567hg6787
-	public static $appId = '';
+	private $appId = '';
 
 	# 直连商户号 如：1230000109
-	public static $mchId = '';
+	private $mchId = '';
 
 	# 商品描述 如：Image形象店-深圳腾大-QQ公仔
-	public static $description = '';
+	public $description = '';
 
 	# 交易结束时间
-	public static $timeExpire = '';
+	public $timeExpire = '';
 
 	# 自定义数据
-	public static $attach = '';
+	public $attach = '';
 
 	# 通知地址 如：https://www.aaa.com/pay.php
-	public static $notifyUrl = '';
+	public $notifyUrl = '';
 
 	# 货币类型 如：CNY
-	public static $currency = 'CNY';
+	public $currency = 'CNY';
 
 	# 用户标识 如：oUpF8uMuAJO_M2pxb1Q9zNjWeS6o
-	public static $openId = '';
+	private $openId = '';
 
 	# 订单优惠标记 如：WXG
-	public static $goodsTag = '';
+	public $goodsTag = '';
 
 	# 优惠功能
-	public static $detail = [];
+	public $detail = [];
 
 	# 场景信息
-	public static $sceneInfo = [];
+	public $sceneInfo = [];
+	
+	public function __construct(string $appId, string $mchId)
+    {
+        $this->appId = $appId;
+        $this->mchId = $mchId;
+    }
 
-	/**
+    /**
 	 * jsapi trade(包括小程序)
 	 * @param string $outTradeNo 商户订单号
 	 * @param int $total 金额，单位/分
 	 * @return array|false|mixed
 	 */
-	public function jsapiV3(string $outTradeNo, int $total)
+	public function jsapiV3(string $outTradeNo, int $total, string $openId)
 	{
+	    $this->url = $this->url ?: '/v3/pay/transactions/jsapi';
+	    $this->openId = $openId;
 		$result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_JSAPI);
 		if (isset($result['prepay_id'])){
 			$time = time();
 			$nonceStr = Tools::getRandString(24);
 
 			return [
-				'appId'=> self::$appId,
+				'appId'=> $this->appId,
 				'timeStamp'=> $time,
 				'nonceStr'=> $nonceStr,
 				'package'=> 'prepay_id='.$result['prepay_id'],
-				'signType'=>'RSA',
-				'paySign'=> WechatUtil::getSign(self::$privateKeyPath, [
-				  self::$appId,
-				  $time,
-				  $nonceStr,
-				  'prepay_id='.$result['prepay_id']
+				'signType'=> 'RSA',
+				'paySign'=> WechatUtil::getSign($this->privateKeyPath, [
+                    $this->appId,
+                    $time,
+                    $nonceStr,
+                    'prepay_id='.$result['prepay_id']
 				]),
 			];
 		}
@@ -100,23 +108,25 @@ final class WxPay
 	 */
 	public function appV3(string $outTradeNo, int $total)
 	{
-		$result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_APP);
+        $this->url = $this->url ?: '/v3/pay/transactions/app';
+        $result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_APP);
 		if (isset($result['prepay_id'])){
 			$time = time();
 			$nonceStr = Tools::getRandString(24);
 
 			return [
-			  'appid'=> self::$appId,
-			  'partnerid'=> self::$mchId,
-			  'prepayid'=> $result['prepay_id'],
-			  'timestamp'=> $time,
-			  'noncestr'=> $nonceStr,
-			  'sign'=> WechatUtil::getSign(self::$privateKeyPath, [
-				self::$appId,
-				$time,
-				$nonceStr,
-				$result['prepay_id']
-			  ]),
+                'appid'=> $this->appId,
+                'partnerid'=> $this->mchId,
+                'prepayid'=> $result['prepay_id'],
+                'timestamp'=> $time,
+                'package'=> 'Sign=WXPay',
+                'noncestr'=> $nonceStr,
+                'sign'=> WechatUtil::getSign($this->privateKeyPath, [
+                    $this->appId,
+                    $time,
+                    $nonceStr,
+                    $result['prepay_id']
+			    ])
 			];
 		}
 		return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败！';
@@ -128,8 +138,10 @@ final class WxPay
 	 * @param int $total 金额，单位/分
 	 * @return array|string
 	 */
-	public function h5V3(string $outTradeNo, int $total)
+	public function h5V3(string $outTradeNo, int $total, string $openId)
 	{
+        $this->url = $this->url ?: '/v3/pay/transactions/app';
+        $this->openId = $openId;
 		$result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_H5);
 		if (isset($result['h5_url'])){
 			return $result['h5_url'];
@@ -141,12 +153,12 @@ final class WxPay
 	 * native trade(自行使用QR code将code_url生成二维码)
 	 * @param string $outTradeNo
 	 * @param int $total
-	 * @param bool $createImg
 	 * @return mixed|string
 	 */
-	public function nativeV3(string $outTradeNo, int $total, bool $createImg = false)
+	public function nativeV3(string $outTradeNo, int $total)
 	{
-		$result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_NATIVE);
+        $this->url = $this->url ?: '/v3/pay/transactions/native';
+        $result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_NATIVE);
 		if (isset($result['code_url'])){
 			return $result['code_url'];
 		}
@@ -173,12 +185,12 @@ final class WxPay
 		  'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
 		];
 		$header[] = WechatUtil::instance()->buildPayRequestSign('GET',$url, [
-		  'private_key_path'=> self::$privateKeyPath,
-		  'mch_id'=>self::$mchId,
-		  'serial_no'=>self::$serialNo
+		  'private_key_path'=> $this->privateKeyPath,
+		  'mch_id'=>$this->mchId,
+		  'serial_no'=>$this->serialNo
 		]);
 
-		$result = HttpRequest::instance()->httpGet(self::$gateway.$url, ['mchid'=>self::$mchId],['header'=>$header]);
+		$result = HttpRequest::instance()->httpGet($this->gateway.$url, ['mchid'=>$this->mchId],['header'=>$header]);
 		$result = json_decode($result,true);
 		if(isset($result['appid'])){
 			unset($result['appid']);
@@ -198,65 +210,34 @@ final class WxPay
 	public function transaction(string $outTradeNo, int $total, string $payChannel = '')
 	{
 		$body = [
-			'appid'=> self::$appId,
-			'mchid'=> self::$mchId,
+			'appid'=> $this->appId,
+			'mchid'=> $this->mchId,
+            'description'=> $this->description,
 			'out_trade_no'=> $outTradeNo,
-			'notify_url'=> self::$notifyUrl,
-			'amount'=> ['currency'=>self::$currency, 'total'=>$total],
+			'notify_url'=> $this->notifyUrl,
+			'amount'=> ['currency'=>$this->currency, 'total'=>$total],
 		];
 
-		switch ($payChannel){
-			case WechatConst::PAY_TYPE_JSAPI:
-			case WechatConst::PAY_TYPE_APPLET:
-				$body['payer'] = ['openid'=>self::$openId];
-				break;
-			case WechatConst::PAY_TYPE_NATIVE:
-				$body['description'] = self::$description;
-				break;
-			case WechatConst::PAY_TYPE_H5:
-				$body['scene_info'] = self::$sceneInfo;
-				break;
-//			case WechatConst::PAY_TYPE_APP:
-//				break;
-		}
-
-		if(self::$description && !isset($body['description'])){
-			$body['description'] = self::$description;
-		}
-		if(self::$timeExpire && !isset($body['time_expire'])){
-			$body['time_expire'] = self::$timeExpire;
-		}
-		if(self::$attach && !isset($body['attach'])){
-			$body['attach'] = self::$attach;
-		}
-		if(self::$goodsTag && !isset($body['goods_tag'])){
-			$body['goods_tag'] = self::$goodsTag;
-		}
-		if(self::$detail && !isset($body['detail'])){
-			$body['detail'] = self::$detail;
-		}
+		if($payChannel == WechatConst::PAY_TYPE_JSAPI) $body['payer'] = ['openid'=>$this->openId];
+		if($this->timeExpire) $body['time_expire'] = $this->timeExpire;
+		if($this->attach) $body['attach'] = $this->attach;
+		if($this->goodsTag) $body['goods_tag'] = $this->goodsTag;
+		if($this->detail) $body['detail'] = $this->detail;
+		if($this->sceneInfo) $body['scene_info'] = $this->sceneInfo;
 
 		$header = [
-		  'Content-Type: application/json;charset=UTF-8',
-		  'Accept: application/json',
-		  'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
+            'Content-Type: application/json;charset=UTF-8',
+            'Accept: application/json',
+            'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
 		];
 		try {
-			$header[] = WechatUtil::instance()->buildPayRequestSign(
-			  self::$method,
-			  self::$url,
-			  [
-				'private_key_path'=>self::$privateKeyPath,
-				'mch_id'=>self::$mchId,
-				'serial_no'=>self::$serialNo
-			  ],
-			  json_encode($body,JSON_UNESCAPED_UNICODE)
-			);
+			$header[] = WechatUtil::instance()->buildPayRequestSign($this->method, $this->url, [
+				'private_key_path'=>$this->privateKeyPath,
+				'mch_id'=>$this->mchId,
+				'serial_no'=>$this->serialNo
+            ], json_encode($body)); // 这里的json_encode切勿使用JSON_UNESCAPED_UNICODE
 
-			$result = HttpRequest::instance()->httpPost(self::$gateway.self::$url, $body,[
-			  'header'=> $header,
-			  'format'=>'json'
-			]);
+			$result = HttpRequest::instance()->httpPost($this->gateway.$this->url, $body,['header'=> $header, 'format'=>'json']);
 			return json_decode($result, true);
 		}catch (\Exception $e){
 			return ['message'=>$e->getMessage()];
@@ -274,8 +255,8 @@ final class WxPay
 	public function refundV2(string $transactionId, int $totalFee, int $refundFee, string $outRefundNo)
 	{
 		$params = [
-		  'appid'=> self::$appId,
-		  'mch_id'=> self::$mchId,
+		  'appid'=> $this->appId,
+		  'mch_id'=> $this->mchId,
 		  'nonce_str'=> Tools::getRandString(24),
 		  'transaction_id'=> $transactionId,
 		  'out_refund_no'=> $outRefundNo,
@@ -284,13 +265,13 @@ final class WxPay
 		];
 		ksort($params);
 		$str = http_build_query($params);
-		$str .= '&key='.self::$secret;
+		$str .= '&key='.$this->secret;
 		$str = strtoupper(md5($str));
 		$params['sign'] = $str;
 
 		try {
-			$result = HttpRequest::instance()->httpPost(self::$gateway.'/secapi/pay/refund', $params, [
-			  'cert'=> ['cert'=> self::$privateKeyPath, 'key'=> self::$certPath],
+			$result = HttpRequest::instance()->httpPost($this->gateway.'/secapi/pay/refund', $params, [
+			  'cert'=> ['cert'=> $this->privateKeyPath, 'key'=> $this->certPath],
 			  'format'=>'xml'
 			]);
 			if($result){
