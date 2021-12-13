@@ -1,15 +1,19 @@
 <?php
-/**
- * function helper
- */
+namespace Cm\CmTool;
 
-if(!function_exists('arr2xml')){
+use Cm\CmBase\Traits\Singleton;
+
+class Tools
+{
+	use Singleton;
+
 	/**
 	 * array to xml
 	 * @param $data
 	 * @return string
 	 */
-	function arr2xml($data):string {
+	public static function arr2xml($data):string
+	{
 		if($data){
 			$xml = '<xml>';
 			foreach ($data as $k => $v) {
@@ -20,14 +24,14 @@ if(!function_exists('arr2xml')){
 		}
 		return '';
 	}
-}
-if(!function_exists('cartesian')){
+
 	/**
 	 * 笛卡尔积(存在bug)
 	 * @param $arr
 	 * @return array
 	 */
-	function cartesian(array $arr):array {
+	public static function cartesian(array $arr):array
+	{
 		$first = array_filter($arr[0]);
 		for ($i=1; $i < count($arr); $i++) {
 			$temp = [];
@@ -40,14 +44,14 @@ if(!function_exists('cartesian')){
 		}
 		return $first;
 	}
-}
-if(!function_exists('query2arr')){
+
 	/**
 	 * query string to array
 	 * @param string $string
 	 * @return array
 	 */
-	function query2arr(string $string):array {
+	public static function query2arr(string $string):array
+	{
 		if(trim($string)){
 			$arr = explode('&',$string);
 			array_map(function ($v) use (&$res) {
@@ -58,37 +62,37 @@ if(!function_exists('query2arr')){
 		}
 		return [];
 	}
-}
-if(!function_exists('rand_number')){
+
 	/**
 	 * 获取随机位数数字
 	 * @param  integer $len 长度
 	 * @return string
 	 */
-	function rand_number(int $len = 6):string {
+	public static function randNumber(int $len = 6):string
+	{
 		return substr(str_shuffle(str_repeat('0123456789', $len)), 0, $len);
 	}
-}
-if(!function_exists('get_rand_string')){
+
 	/**
 	 * 获取随机字符串
-	 * @param int $length
+	 * @param int $length 长度
 	 * @return false|string
 	 */
-	function get_rand_string(int $length = 8){
+	public static function getRandString(int $length = 8)
+	{
 		$char = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$char = str_shuffle(str_shuffle($char));
 		$char = substr($char, rand(0, strlen($char)-$length-1), $length);
 		return $char;
 	}
-}
-if(!function_exists('header2arr')){
+
 	/**
 	 * header头转数组
 	 * @param string $header
 	 * @return array
 	 */
-	function header2arr(string $header = ''):array {
+	public static function header2arr(string $header = ''):array
+	{
 		$header = explode("\r\n", $header);
 		$arr = [];
 		foreach ($header as $v) {
@@ -97,25 +101,25 @@ if(!function_exists('header2arr')){
 		}
 		return $arr;
 	}
-}
-if(!function_exists('create_order_no')) {
+
 	/**
 	 * 创建28位订单号
 	 * @return string
 	 */
-	function create_order_no():string {
+	public static function createOrderNo():string
+	{
 		return date('YmdHis', $_SERVER['REQUEST_TIME']).rand(1000,9999).str_shuffle('1234567890');
 	}
-}
-if(!function_exists('scrypt')){
+
 	/**
 	 * 加密解密字符串
-	 * @param string $string
-	 * @param string $key
+	 * @param string $string 待加解密字符串
+	 * @param string $key 密钥
 	 * @param bool $de
 	 * @return false|string
 	 */
-	function scrypt(string $string, string $key = 'cm9510tools', bool $de = false){
+	public static function scrypt(string $string, string $key = 'cm9510tools', bool $de = false)
+	{
 		if($de){
 			$content = openssl_decrypt($string, 'DES-ECB', $key, 0);
 		}else{
@@ -123,14 +127,13 @@ if(!function_exists('scrypt')){
 		}
 		return $content;
 	}
-}
-if(!function_exists('img_base64')){
+
 	/**
-	 * base64编码
+	 * 图片base64编码
 	 * @param string $path
 	 * @return false|string
 	 */
-	function img_base64(string $path)
+	public static function imgBase64(string $path)
 	{
 		# 对path进行判断，如果是本地文件就二进制读取并base64编码，如果是url,则返回
 		if (substr($path,0,strlen("http")) === "http"){
@@ -142,6 +145,54 @@ if(!function_exists('img_base64')){
 			return base64_encode($binary); // 转码
 		}
 		return false;
+	}
+
+	/**
+	 * 写日志
+	 * @param string $storePath 保存路径
+	 * @param string $msg 内容
+	 * @param bool $oneFile 是否写成一个文件
+	 * @return bool
+	 */
+	public static function log(string $storePath, string $msg, bool $oneFile = false):bool
+	{
+		if (empty((trim($msg)))){
+			return false;
+		}
+		$logFile = $oneFile ? 'cm_logs_all.txt' : 'cm_logs_'.date('Y-m-d').'.txt';
+		$logTime = $oneFile ? date('Y-m-d/H:i:s') : date('H:i:s');
+		if($storePath && is_dir($storePath)){
+			$msg = '['.date_default_timezone_get().' > '.$logTime.'] '.$msg."\n";
+			file_put_contents($storePath.$logFile, $msg, FILE_APPEND);
+			unset($logFile,$logTime,$msg);
+			return true;
+		}
+		unset($logFile,$logTime);
+		return false;
+	}
+
+	/**
+	 * xml转array
+	 * @param string $xml
+	 * @param int $xmlType 1xml字符串，2xml文件
+	 * @return false|mixed
+	 */
+	public static function xmlToArray(string $xml, int $xmlType = 1)
+	{
+		if (empty($xml)) {
+			return false;
+		}
+		switch ($xmlType){
+			case 1:
+				$result = simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
+				break;
+			case 2:
+				$result = simplexml_load_file($xml);
+				break;
+			default:
+				return  false;
+		}
+		return json_decode(json_encode($result), true);
 	}
 
 }

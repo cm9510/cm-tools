@@ -3,11 +3,23 @@ namespace Cm\CmTool;
 
 use Cm\CmBase\Traits\Singleton;
 
-class HttpRequest
+final class HttpRequest
 {
-	use Singleton{
-		instance as public getInstance;
+	use Singleton;
+
+	/**
+	 * 单例出口
+	 * @return static
+	 */
+	public static function instance():self
+	{
+		if(self::$instance && self::$instance instanceof self){
+			return self::$instance;
+		}
+		self::$instance = new self;
+		return  self::$instance;
 	}
+
 
 	/**
 	 * get请求
@@ -28,6 +40,13 @@ class HttpRequest
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		}
+		if(isset($params['cert']) && $params['cert']){
+			curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
+			curl_setopt($ch, CURLOPT_SSLCERT, $params['cert']['cert']);
+			curl_setopt($ch, CURLOPT_SSLKEYTYPE, 'PEM');
+			curl_setopt($ch, CURLOPT_SSLKEY, $params['cert']['key']);
+
+		}
 		if(isset($params['header']) && $params['header']){
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $params['header']);
 			curl_setopt($ch, CURLOPT_HEADER, false);//返回response头部信息
@@ -41,8 +60,9 @@ class HttpRequest
 	 * post请求
 	 * @param string $url
 	 * @param array $data
-	 * @param array $params
+	 * @param array|string[] $params
 	 * @return bool|string
+	 * @throws \Exception
 	 */
 	public function httpPost(string $url, array $data, array $params = ['format'=>'form_field'])
 	{
@@ -71,7 +91,7 @@ class HttpRequest
 			switch ($params['format']){
 				case 'form_field': $data = http_build_query($data); break;
 				case 'json': $data = json_encode($data); break;
-				case 'xml': $data = arr2xml($data); break;
+				case 'xml': $data = Tools::arr2xml($data); break;
 				default:
 					throw new \Exception('data format is not valid.');
 			}
