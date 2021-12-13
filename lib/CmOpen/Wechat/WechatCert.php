@@ -5,7 +5,6 @@ use Cm\CmTool\HttpRequest;
 
 class WechatCert
 {
-	public $gateway = '';
 	public $apiV3 = '';
 	public $privateKeyPath = '';
 	public $mchId = '';
@@ -28,7 +27,7 @@ class WechatCert
 			'mch_id'=>$this->mchId,
 			'serial_no'=>$this->serialNo
 		]);
-		$result = HttpRequest::instance()->httpGet($this->gateway.'/v3/certificates', [], ['header'=>$header]);
+		$result = HttpRequest::instance()->httpGet('https://api.mch.weixin.qq.com/v3/certificates', [], ['header'=>$header]);
 		$result = json_decode($result, true);
 		if(isset($result['data'])){
 			$certData = end($result['data']);
@@ -49,7 +48,6 @@ class WechatCert
 
 	public function __construct(array $config)
 	{
-		$this->gateway = $config['gateway'] ?? '';
 		$this->apiV3 = $config['api_v3'] ?? '';
 		$this->privateKeyPath = $config['private_key_path'] ?? '';
 		$this->mchId = $config['mch_id'] ?? '';
@@ -58,7 +56,6 @@ class WechatCert
 
 	public function __destruct()
 	{
-		$this->gateway = '';
 		$this->apiV3 = '';
 		$this->privateKeyPath = '';
 		$this->mchId = '';
