@@ -178,22 +178,22 @@ final class WxPay
 	{
 		$url = '';
 		if($type == WechatConst::TRADE_QUERY_WAY_TRA){
-			$url = '/v3/pay/transactions/id/'.$number;
+			$url = '/v3/pay/transactions/id/'.$number.'?mchid='.$this->mchId;
 		}elseif ($type == WechatConst::TRADE_QUERY_WAY_OTN){
-			$url = '/v3/pay/transactions/out-trade-no/'.$number;
+			$url = '/v3/pay/transactions/out-trade-no/'.$number.'?mchid='.$this->mchId;
 		}
 		$header = [
-		  'Content-Type: application/json;charset=UTF-8',
-		  'Accept: application/json',
-		  'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
+            'Content-Type: application/json;charset=UTF-8',
+            'Accept: application/json',
+            'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
 		];
 		$header[] = WechatUtil::instance()->buildPayRequestSign('GET',$url, [
-		  'private_key_path'=> $this->privateKeyPath,
-		  'mch_id'=>$this->mchId,
-		  'serial_no'=>$this->serialNo
+            'private_key_path'=> $this->privateKeyPath,
+            'mch_id'=>$this->mchId,
+            'serial_no'=>$this->serialNo
 		]);
 
-		$result = HttpRequest::instance()->httpGet($this->gateway.$url, ['mchid'=>$this->mchId],['header'=>$header]);
+		$result = HttpRequest::instance()->httpGet($this->gateway.$url, [],['header'=>$header]);
 		$result = json_decode($result,true);
 		if(isset($result['appid'])){
 			unset($result['appid']);
