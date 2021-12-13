@@ -82,8 +82,7 @@ class Tools
 	{
 		$char = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$char = str_shuffle(str_shuffle($char));
-		$char = substr($char, rand(0, strlen($char)-$length-1), $length);
-		return $char;
+        return substr($char, rand(0, strlen($char)-$length-1), $length);
 	}
 
 	/**

@@ -17,6 +17,9 @@ final class WxPay
 	# 商户密钥(API_V3_key)
 	public $secret = '';
 
+	# 平台证书存放目录
+	public $platformCertDir = '';
+
 	# 商户API证书序列号
 	public $serialNo = '';
 
@@ -238,7 +241,12 @@ final class WxPay
             ], json_encode($body)); // 这里的json_encode切勿使用JSON_UNESCAPED_UNICODE
 
 			$result = HttpRequest::instance()->httpPost($this->gateway.$this->url, $body,['header'=> $header, 'format'=>'json']);
-			return json_decode($result, true);
+			list($h,$b) = explode("\r\n\r\n", $result);
+            $verifySign = $this->verifySign($h, $b);
+            if(!$verifySign){
+                throw new \Exception('应答验签失败！');
+            }
+			return json_decode($b, true);
 		}catch (\Exception $e){
 			return ['message'=>$e->getMessage()];
 		}
@@ -293,4 +301,28 @@ final class WxPay
 		}
 	}
 
+    /**
+     * 应答验签
+     * @param $header
+     * @param $body
+     * @return bool
+     * @throws \Exception
+     */
+    public function verifySign($header, $body): bool
+    {
+        if(is_string($header)){
+            $header = Tools::header2arr($header);
+        }
+        $body = trim($body);
+        $cert = $header['wechatpay-serial'] ?? 'no-cert';
+        if(file_exists($this->platformCertDir . $cert . '.txt')){
+            $publicKey = file_get_contents($this->platformCertDir . $cert . '.txt');
+            $message = $header['wechatpay-timestamp']."\n".$header['wechatpay-nonce']."\n".$body."\n";
+            $remoteSign = base64_decode($header['wechatpay-signature']);
+            $result = openssl_verify($message, $remoteSign, $publicKey,OPENSSL_ALGO_SHA256);
+            return ($result == 1);
+        }else{
+            throw new \Exception('平台证书不存在！');
+        }
+    }
 }
