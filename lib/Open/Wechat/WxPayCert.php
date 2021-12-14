@@ -3,7 +3,7 @@ namespace Cm\Open\Wechat;
 
 use Cm\Tool\HttpRequest;
 
-class WechatCert
+class WxPayCert
 {
 	public $apiV3 = '';
 	public $privateKeyPath = '';
@@ -22,7 +22,7 @@ class WechatCert
 		  'Accept: application/json',
 		  'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
 		];
-		$header[] = WechatUtil::instance()->buildPayRequestSign('GET','/v3/certificates', [
+		$header[] = WxPayUtil::instance()->buildPayRequestSign('GET','/v3/certificates', [
 			'private_key_path'=> $this->privateKeyPath,
 			'mch_id'=>$this->mchId,
 			'serial_no'=>$this->serialNo
@@ -31,7 +31,7 @@ class WechatCert
 		$result = json_decode($result, true);
 		if(isset($result['data'])){
 			$certData = end($result['data']);
-			$certCont = WechatUtil::instance()->decryptCert(
+			$certCont = WxPayUtil::instance()->decryptCert(
 			  $this->apiV3,
 			  $certData['encrypt_certificate']['associated_data'],
 			  $certData['encrypt_certificate']['nonce'],

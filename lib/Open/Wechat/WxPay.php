@@ -3,6 +3,9 @@ namespace Cm\Open\Wechat;
 
 use Cm\Tool\{ HttpRequest, Tools };
 
+/**
+ * 微信支付
+ */
 final class WxPay
 {
 	# 商户私钥路径 如：/public/pay/apiclient_key.pem
@@ -89,7 +92,7 @@ final class WxPay
 				'nonceStr'=> $nonceStr,
 				'package'=> 'prepay_id='.$result['prepay_id'],
 				'signType'=> 'RSA',
-				'paySign'=> WechatUtil::getSign($this->privateKeyPath, [
+				'paySign'=> WxPayUtil::getSign($this->privateKeyPath, [
                     $this->appId,
                     $time,
                     $nonceStr,
@@ -121,7 +124,7 @@ final class WxPay
                 'timestamp'=> $time,
                 'package'=> 'Sign=WXPay',
                 'noncestr'=> $nonceStr,
-                'sign'=> WechatUtil::getSign($this->privateKeyPath, [
+                'sign'=> WxPayUtil::getSign($this->privateKeyPath, [
                     $this->appId,
                     $time,
                     $nonceStr,
@@ -167,7 +170,7 @@ final class WxPay
             'Accept: application/json',
             'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
 		];
-		$header[] = WechatUtil::instance()->buildPayRequestSign('GET',$url, [
+		$header[] = WxPayUtil::instance()->buildPayRequestSign('GET',$url, [
             'private_key_path'=> $this->privateKeyPath,
             'mch_id'=>$this->mchId,
             'serial_no'=>$this->serialNo
@@ -214,7 +217,7 @@ final class WxPay
             'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
 		];
 		try {
-			$header[] = WechatUtil::instance()->buildPayRequestSign($this->method, $this->url, [
+			$header[] = WxPayUtil::instance()->buildPayRequestSign($this->method, $this->url, [
 				'private_key_path'=>$this->privateKeyPath,
 				'mch_id'=>$this->mchId,
 				'serial_no'=>$this->serialNo
@@ -259,7 +262,7 @@ final class WxPay
         ];
 
         try {
-            $header[] = WechatUtil::instance()->buildPayRequestSign($this->method, $this->url, [
+            $header[] = WxPayUtil::instance()->buildPayRequestSign($this->method, $this->url, [
                 'private_key_path'=>$this->privateKeyPath,
                 'mch_id'=>$this->mchId,
                 'serial_no'=>$this->serialNo

@@ -4,7 +4,7 @@ namespace Cm\Open\Wechat;
 use Cm\Base\Traits\Singleton;
 use Cm\Tool\Tools;
 
-final class WechatUtil
+final class WxPayUtil
 {
 	use Singleton;
 
