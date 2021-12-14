@@ -1,13 +1,10 @@
 <?php
-namespace Cm\CmOpen\Wechat;
+namespace Cm\Open\Wechat;
 
-use Cm\CmBase\Traits\CallStatic;
-use Cm\CmTool\{HttpRequest, Tools};
+use Cm\Tool\{ HttpRequest, Tools };
 
 final class WxPay
 {
-	use CallStatic;
-
 	# 商户私钥路径 如：/public/pay/apiclient_key.pem
 	public $privateKeyPath = '';
 
@@ -15,7 +12,7 @@ final class WxPay
 	public $certPath = '';
 
 	# 商户密钥(API_V3_key)
-	public $secret = '';
+	public $secretV3 = '';
 
 	# 平台证书存放目录
 	public $platformCertDir = '';
@@ -81,7 +78,7 @@ final class WxPay
 	{
 	    $this->url = $this->url ?: '/v3/pay/transactions/jsapi';
 	    $this->openId = $openId;
-		$result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_JSAPI);
+		$result = $this->transaction($outTradeNo, $total,WechatConst::PAY_TYPE_JSAPI);
 		if (isset($result['prepay_id'])){
 			$time = time();
 			$nonceStr = Tools::getRandString(24);
@@ -112,7 +109,7 @@ final class WxPay
 	public function appV3(string $outTradeNo, int $total)
 	{
         $this->url = $this->url ?: '/v3/pay/transactions/app';
-        $result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_APP);
+        $result = $this->transaction($outTradeNo, $total);
 		if (isset($result['prepay_id'])){
 			$time = time();
 			$nonceStr = Tools::getRandString(24);
@@ -136,23 +133,6 @@ final class WxPay
 	}
 
 	/**
-	 * h5 trade
-	 * @param string $outTradeNo 商户订单号
-	 * @param int $total 金额，单位/分
-	 * @return array|string
-	 */
-	public function h5V3(string $outTradeNo, int $total, string $openId)
-	{
-        $this->url = $this->url ?: '/v3/pay/transactions/app';
-        $this->openId = $openId;
-		$result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_H5);
-		if (isset($result['h5_url'])){
-			return $result['h5_url'];
-		}
-		return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败！';
-	}
-
-	/**
 	 * native trade(自行使用QR code将code_url生成二维码)
 	 * @param string $outTradeNo
 	 * @param int $total
@@ -161,7 +141,7 @@ final class WxPay
 	public function nativeV3(string $outTradeNo, int $total)
 	{
         $this->url = $this->url ?: '/v3/pay/transactions/native';
-        $result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_NATIVE);
+        $result = $this->transaction($outTradeNo, $total);
 		if (isset($result['code_url'])){
 			return $result['code_url'];
 		}
@@ -252,8 +232,47 @@ final class WxPay
 		}
 	}
 
+    /**
+     * 退款V3版本
+     * @param string $tradeNo
+     * @param string $refundNo
+     * @param int $refund
+     * @param int $total
+     * @param string $type
+     * @return array|mixed
+     */
+    public function refundV3(string $tradeNo, string $refundNo, int $refund, int $total, string $type = 'out_trade_no')
+    {
+        $this->url = $this->url ?: '/v3/refund/domestic/refunds';
+
+        $body = [
+            'out_refund_no'=> $refundNo,
+            'amount'=> ['currency'=>'CNY', 'total'=>$total, 'refund'=>$refund]
+        ];
+        if($type == 'out_trade_no') $body['out_trade_no'] = $tradeNo;
+        if($type == 'transaction_id') $body['transaction_id'] = $tradeNo;
+
+        $header = [
+            'Content-Type: application/json;charset=UTF-8',
+            'Accept: application/json',
+            'User-Agent: '.$_SERVER['HTTP_USER_AGENT']
+        ];
+
+        try {
+            $header[] = WechatUtil::instance()->buildPayRequestSign($this->method, $this->url, [
+                'private_key_path'=>$this->privateKeyPath,
+                'mch_id'=>$this->mchId,
+                'serial_no'=>$this->serialNo
+            ], json_encode($body)); // 这里的json_encode切勿使用JSON_UNESCAPED_UNICODE
+            $result = HttpRequest::instance()->httpPost($this->gateway.$this->url, $body,['header'=> $header, 'format'=>'json']);
+            return json_decode($result, true);
+        }catch (\Exception $e){
+            return ['message'=>$e->getMessage()];
+        }
+	}
+
 	/**
-	 * 退款
+	 * 退款V2版本
 	 * @param string $transactionId 交易单号
 	 * @param int $totalFee 总金额
 	 * @param int $refundFee 退款金额

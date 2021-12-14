@@ -1,7 +1,7 @@
 <?php
-namespace Cm\CmOpen\Wechat;
+namespace Cm\Open\Wechat;
 
-use Cm\CmTool\HttpRequest;
+use Cm\Tool\HttpRequest;
 
 class WechatCert
 {

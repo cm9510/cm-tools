@@ -1,8 +1,8 @@
 <?php
-namespace Cm\CmOpen\Wechat;
+namespace Cm\Open\Wechat;
 
-use Cm\CmBase\Traits\Singleton;
-use Cm\CmTool\Tools;
+use Cm\Base\Traits\Singleton;
+use Cm\Tool\Tools;
 
 final class WechatUtil
 {

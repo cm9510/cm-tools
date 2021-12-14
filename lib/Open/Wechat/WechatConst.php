@@ -1,5 +1,5 @@
 <?php
-namespace Cm\CmOpen\Wechat;
+namespace Cm\Open\Wechat;
 
 final class WechatConst
 {
