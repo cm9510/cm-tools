@@ -1,7 +1,7 @@
 <?php
-namespace Cm\CmTool;
+namespace Cm\Tool;
 
-use Cm\CmBase\Traits\Singleton;
+use Cm\Base\Traits\Singleton;
 
 class Tools
 {
@@ -121,12 +121,8 @@ class Tools
 	 */
 	public static function scrypt(string $string, string $key = 'cm9510tools', bool $de = false)
 	{
-		if($de){
-			$content = openssl_decrypt($string, 'DES-ECB', $key, 0);
-		}else{
-			$content = openssl_encrypt($string,'DES-ECB', $key, 0);
-		}
-		return $content;
+	    $fun = $de ? 'openssl_decrypt' : 'openssl_encrypt';
+	    return $fun($string, 'DES-ECB', $key, 0);
 	}
 
 	/**
@@ -137,9 +133,7 @@ class Tools
 	public static function imgBase64(string $path)
 	{
 		# 对path进行判断，如果是本地文件就二进制读取并base64编码，如果是url,则返回
-		if (substr($path,0,strlen("http")) === "http"){
-			return $path;
-		}
+		if (substr($path,0,strlen("http")) === "http") return $path;
 		if($fp = fopen($path, "rb", 0)) {
 			$binary = fread($fp, filesize($path)); // 文件读取
 			fclose($fp);
@@ -157,9 +151,8 @@ class Tools
 	 */
 	public static function log(string $storePath, string $msg, bool $oneFile = false):bool
 	{
-		if (empty((trim($msg)))){
-			return false;
-		}
+		if (empty(trim($msg))) return false;
+
 		$logFile = $oneFile ? 'cm_logs_all.txt' : 'cm_logs_'.date('Y-m-d').'.txt';
 		$logTime = $oneFile ? date('Y-m-d/H:i:s') : date('H:i:s');
 		if($storePath && is_dir($storePath)){
@@ -180,9 +173,7 @@ class Tools
 	 */
 	public static function xmlToArray(string $xml, int $xmlType = 1)
 	{
-		if (empty($xml)) {
-			return false;
-		}
+		if (empty($xml)) return false;
 		switch ($xmlType){
 			case 1:
 				$result = simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);

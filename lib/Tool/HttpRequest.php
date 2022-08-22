@@ -1,7 +1,7 @@
 <?php
-namespace Cm\CmTool;
+namespace Cm\Tool;
 
-use Cm\CmBase\Traits\Singleton;
+use Cm\Base\Traits\Singleton;
 
 final class HttpRequest
 {

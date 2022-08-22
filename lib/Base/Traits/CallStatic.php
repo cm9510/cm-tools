@@ -1,5 +1,5 @@
 <?php
-namespace Cm\CmBase\Traits;
+namespace Cm\Base\Traits;
 
 trait CallStatic
 {
