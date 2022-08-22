@@ -73,15 +73,17 @@ class Tools
 		return substr(str_shuffle(str_repeat('0123456789', $len)), 0, $len);
 	}
 
-	/**
-	 * 获取随机字符串
-	 * @param int $length 长度
-	 * @return false|string
-	 */
-	public static function getRandString(int $length = 8)
+    /**
+     * 获取随机字符串
+     * @param int $length
+     * @param bool $sc
+     * @return false|string
+     */
+	public static function getRandString(int $length = 8, bool $sc = false)
 	{
-		$char = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		$char = str_shuffle(str_shuffle($char));
+	    $char = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	    if ($sc) $char .= '*&/=+\\-@!$)~';
+		$char = str_shuffle($char);
         return substr($char, rand(0, strlen($char)-$length-1), $length);
 	}
 
@@ -102,12 +104,12 @@ class Tools
 	}
 
 	/**
-	 * 创建28位订单号
+	 * 创建24位订单号
 	 * @return string
 	 */
 	public static function createOrderNo():string
 	{
-		return date('YmdHis', $_SERVER['REQUEST_TIME']).rand(1000,9999).str_shuffle('1234567890');
+		return date('YmdHis').rand(1000,9999).substr(str_shuffle('1234567890'),0,6);
 	}
 
 	/**
