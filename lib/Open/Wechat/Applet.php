@@ -1,7 +1,7 @@
 <?php
 namespace Cm\Open\Wechat;
 
-use Cm\Tool\HttpRequest;
+use Cm\Tool\Tools;
 
 /**
  * 小程序服务端
@@ -33,7 +33,7 @@ class Applet
     public function code2Session(string $code, string $grantType = 'authorization_code')
     {
         $this->url = $this->url ?: '/sns/jscode2session';
-        $result = HttpRequest::instance()->httpGet($this->gateway . $this->url, [
+        $result = Tools::httpGet($this->gateway . $this->url, [
             'appid'=>$this->appId,
             'secret'=>$this->secret,
             'js_code'=>$code,
@@ -53,7 +53,7 @@ class Applet
     public function getAccessToken(string $grantType = 'grant_type')
     {
         $this->url = $this->url ?: '/cgi-bin/token';
-        $result = HttpRequest::instance()->httpGet($this->gateway . $this->url, [
+        $result = Tools::httpGet($this->gateway . $this->url, [
             'appid'=>$this->appId,
             'secret'=>$this->secret,
             'grant_type'=>$grantType

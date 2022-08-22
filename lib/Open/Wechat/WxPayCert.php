@@ -1,7 +1,7 @@
 <?php
 namespace Cm\Open\Wechat;
 
-use Cm\Tool\HttpRequest;
+use Cm\Tool\Tools;
 
 class WxPayCert
 {
@@ -27,7 +27,7 @@ class WxPayCert
 			'mch_id'=>$this->mchId,
 			'serial_no'=>$this->serialNo
 		]);
-		$result = HttpRequest::instance()->httpGet('https://api.mch.weixin.qq.com/v3/certificates', [], ['header'=>$header]);
+		$result = Tools::httpGet('https://api.mch.weixin.qq.com/v3/certificates', [], ['header'=>$header]);
 		$result = json_decode($result, true);
 		if(isset($result['data'])){
 			$certData = end($result['data']);

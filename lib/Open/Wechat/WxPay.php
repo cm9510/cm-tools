@@ -1,7 +1,7 @@
 <?php
 namespace Cm\Open\Wechat;
 
-use Cm\Tool\{ HttpRequest, Tools };
+use Cm\Tool\Tools;
 
 /**
  * 微信支付
@@ -28,6 +28,9 @@ final class WxPay
 
 	# 路径
 	public $url = '';
+
+	# 密钥
+	public $secret = '';
 
 	# HTTP请求的方法
 	public $method = 'POST';
@@ -176,7 +179,7 @@ final class WxPay
             'serial_no'=>$this->serialNo
 		]);
 
-		$result = HttpRequest::instance()->httpGet($this->gateway.$url, [],['header'=>$header]);
+		$result = Tools::httpGet($this->gateway.$url, [],['header'=>$header]);
 		$result = json_decode($result,true);
 		if(isset($result['appid'])){
 			unset($result['appid']);
@@ -223,7 +226,7 @@ final class WxPay
 				'serial_no'=>$this->serialNo
             ], json_encode($body)); // 这里的json_encode切勿使用JSON_UNESCAPED_UNICODE
 
-			$result = HttpRequest::instance()->httpPost($this->gateway.$this->url, $body,['header'=> $header, 'format'=>'json']);
+			$result = Tools::httpPost($this->gateway.$this->url, $body,['header'=> $header, 'format'=>'json']);
 			list($h,$b) = explode("\r\n\r\n", $result);
             $verifySign = $this->verifySign($h, $b);
             if(!$verifySign){
@@ -267,7 +270,7 @@ final class WxPay
                 'mch_id'=>$this->mchId,
                 'serial_no'=>$this->serialNo
             ], json_encode($body)); // 这里的json_encode切勿使用JSON_UNESCAPED_UNICODE
-            $result = HttpRequest::instance()->httpPost($this->gateway.$this->url, $body,['header'=> $header, 'format'=>'json']);
+            $result = Tools::httpPost($this->gateway.$this->url, $body,['header'=> $header, 'format'=>'json']);
             return json_decode($result, true);
         }catch (\Exception $e){
             return ['message'=>$e->getMessage()];
@@ -300,7 +303,7 @@ final class WxPay
 		$params['sign'] = $str;
 
 		try {
-			$result = HttpRequest::instance()->httpPost($this->gateway.'/secapi/pay/refund', $params, [
+			$result = Tools::httpPost($this->gateway.'/secapi/pay/refund', $params, [
 			  'cert'=> ['cert'=> $this->privateKeyPath, 'key'=> $this->certPath],
 			  'format'=>'xml'
 			]);
