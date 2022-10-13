@@ -3,7 +3,7 @@ namespace Cm\Open\Wechat;
 
 class AppletUtil
 {
-    private $appId = '';
+    private $appId;
     
     public function __construct(string $appId)
     {

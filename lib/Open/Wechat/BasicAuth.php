@@ -5,11 +5,11 @@ use Cm\Tool\Tools;
 
 class BasicAuth
 {
-    private $type = '';
+    private $type;
 
-    private $appId = '';
+    private $appId;
 
-    private $secret = '';
+    private $secret;
 
     public $gateway = 'https://api.weixin.qq.com';
 
@@ -39,6 +39,7 @@ class BasicAuth
             'grant_type'=>$grantType
         ]);
         $result = json_decode($result, true);
+        $this->url = '';
         if(isset($result['session_key'])) return $result;
         return 'session_key获取失败';
     }
@@ -58,6 +59,7 @@ class BasicAuth
             'grant_type'=>$grantType
         ]);
         $result = json_decode($result, true);
+        $this->url = '';
         if(isset($result['access_token'])) return $result;
         return 'access_token获取失败';
     }
@@ -79,6 +81,7 @@ class BasicAuth
             'grant_type'=>$grantType
         ]);
         $result = json_decode($result, true);
+        $this->url = '';
         if(isset($result['access_token'])) return $result;
         return 'access_token获取失败';
     }
@@ -95,6 +98,7 @@ class BasicAuth
         $this->url = $this->url ?: '/sns/userinfo';
         $result = Tools::httpGet($this->gateway.$this->url, ['access_token'=> $accessToken, 'openid'=> $openid]);
         $result = json_decode($result, true);
+        $this->url = '';
         if(isset($result['unionid'])) return $result;
         return '用户个人信息获取失败';
     }
