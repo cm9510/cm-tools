@@ -56,9 +56,6 @@ final class WxPay
 	# 货币类型 如：CNY
 	public $currency = 'CNY';
 
-	# h5场景信息
-    public $h5SceneInfo = [];
-
 	# 用户标识 如：oUpF8uMuAJO_M2pxb1Q9zNjWeS6o
 	private $openId = '';
 
@@ -227,11 +224,7 @@ final class WxPay
 			'amount'=> ['currency'=>$this->currency, 'total'=>$total],
 		];
 
-		if($payChannel == WechatConst::PAY_TYPE_JSAPI) {
-            $body['payer'] = ['openid'=>$this->openId];
-        }elseif($payChannel == WechatConst::PAY_TYPE_H5) {
-            $body['scene_info'] = $this->h5SceneInfo;
-        }
+		if($payChannel == WechatConst::PAY_TYPE_JSAPI) $body['payer'] = ['openid'=>$this->openId];
 		if($this->timeExpire) $body['time_expire'] = $this->timeExpire;
 		if($this->attach) $body['attach'] = $this->attach;
 		if($this->goodsTag) $body['goods_tag'] = $this->goodsTag;
