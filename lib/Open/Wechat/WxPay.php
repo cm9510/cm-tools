@@ -140,7 +140,7 @@ final class WxPay
 	}
 
     /**
-     * H5支付
+     * H5 trade
      * @param string $outTradeNo 商户订单号
      * @param int $total 金额，单位/分：100=1元
      * @return array|false|mixed|string
