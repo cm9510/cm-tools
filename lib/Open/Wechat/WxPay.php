@@ -56,6 +56,9 @@ final class WxPay
 	# 货币类型 如：CNY
 	public $currency = 'CNY';
 
+	# h5场景信息
+    public $h5SceneInfo = [];
+
 	# 用户标识 如：oUpF8uMuAJO_M2pxb1Q9zNjWeS6o
 	private $openId = '';
 
@@ -75,11 +78,12 @@ final class WxPay
     }
 
     /**
-	 * jsapi trade(包括小程序)
-	 * @param string $outTradeNo 商户订单号
-	 * @param int $total 金额，单位/分
-	 * @return array|false|mixed
-	 */
+     * jsapi trade(公众号、小程序支付)
+     * @param string $outTradeNo 商户订单号
+     * @param int $total 金额，单位/分
+     * @param string $openId 用户openid
+     * @return array|string
+     */
 	public function jsapiV3(string $outTradeNo, int $total, string $openId)
 	{
 	    $this->url = $this->url ?: '/v3/pay/transactions/jsapi';
@@ -103,7 +107,7 @@ final class WxPay
 				]),
 			];
 		}
-		return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败！';
+		return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败';
 	}
 
 	/**
@@ -135,13 +139,29 @@ final class WxPay
 			    ])
 			];
 		}
-		return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败！';
+		return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败';
+	}
+
+    /**
+     * H5支付
+     * @param string $outTradeNo 商户订单号
+     * @param int $total 金额，单位/分：100=1元
+     * @return array|false|mixed|string
+     */
+    public function h5V3(string $outTradeNo, int $total)
+    {
+        $this->url = $this->url ?: '/v3/pay/transactions/h5';
+        $result = $this->transaction($outTradeNo, $total, WechatConst::PAY_TYPE_H5);
+        if(isset($result['h5_url'])){
+            return $result;
+        }
+        return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败';
 	}
 
 	/**
 	 * native trade(自行使用QR code将code_url生成二维码)
-	 * @param string $outTradeNo
-	 * @param int $total
+	 * @param string $outTradeNo 订单号
+	 * @param int $total 金额，单位/分：100=1元
 	 * @return mixed|string
 	 */
 	public function nativeV3(string $outTradeNo, int $total)
@@ -151,7 +171,7 @@ final class WxPay
 		if (isset($result['code_url'])){
 			return $result['code_url'];
 		}
-		return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败！';
+		return isset($result['message']) ? '发生错误：'.$result['message'] : '支付失败';
 	}
 
 	/**
@@ -207,7 +227,11 @@ final class WxPay
 			'amount'=> ['currency'=>$this->currency, 'total'=>$total],
 		];
 
-		if($payChannel == WechatConst::PAY_TYPE_JSAPI) $body['payer'] = ['openid'=>$this->openId];
+		if($payChannel == WechatConst::PAY_TYPE_JSAPI) {
+            $body['payer'] = ['openid'=>$this->openId];
+        }elseif($payChannel == WechatConst::PAY_TYPE_H5) {
+            $body['scene_info'] = $this->h5SceneInfo;
+        }
 		if($this->timeExpire) $body['time_expire'] = $this->timeExpire;
 		if($this->attach) $body['attach'] = $this->attach;
 		if($this->goodsTag) $body['goods_tag'] = $this->goodsTag;
@@ -230,8 +254,9 @@ final class WxPay
 			list($h,$b) = explode("\r\n\r\n", $result);
             $verifySign = $this->verifySign($h, $b);
             if(!$verifySign){
-                throw new \Exception('应答验签失败！');
+                throw new \Exception('应答验签失败');
             }
+            $this->url = '';
 			return json_decode($b, true);
 		}catch (\Exception $e){
 			return ['message'=>$e->getMessage()];
@@ -319,7 +344,7 @@ final class WxPay
 					throw new \Exception('微信支付V2退款失败：'.$result->return_msg);
 				}
 			}else{
-				throw new \Exception('微信支付V2退款请求失败！');
+				throw new \Exception('微信支付V2退款请求失败');
 			}
 		}catch (\Exception $e){
 			return '发生错误：'.$e->getMessage();
@@ -347,7 +372,7 @@ final class WxPay
             $result = openssl_verify($message, $remoteSign, $publicKey,OPENSSL_ALGO_SHA256);
             return ($result == 1);
         }else{
-            throw new \Exception('平台证书不存在！');
+            throw new \Exception('平台证书不存在');
         }
     }
 }
