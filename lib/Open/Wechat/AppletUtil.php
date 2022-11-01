@@ -5,7 +5,7 @@ class AppletUtil
 {
     private $appId;
     
-    public function __construct(string $appId)
+    public function __construct(string $appId = '')
     {
         $this->appId = $appId;
     }
