@@ -273,8 +273,11 @@ final class WxPay
             'out_refund_no'=> $refundNo,
             'amount'=> ['currency'=>'CNY', 'total'=>$total, 'refund'=>$refund]
         ];
-        if($type == 'out_trade_no') $body['out_trade_no'] = $tradeNo;
-        if($type == 'transaction_id') $body['transaction_id'] = $tradeNo;
+        if($type == 'out_trade_no') {
+            $body['out_trade_no'] = $tradeNo;
+        }elseif($type == 'transaction_id') {
+            $body['transaction_id'] = $tradeNo;
+        }
 
         $header = [
             'Content-Type: application/json;charset=UTF-8',
@@ -289,7 +292,8 @@ final class WxPay
                 'serial_no'=>$this->serialNo
             ], json_encode($body)); // 这里的json_encode切勿使用JSON_UNESCAPED_UNICODE
             $result = Tools::httpPost($this->gateway.$this->url, $body,['header'=> $header, 'format'=>'json']);
-            return json_decode($result, true);
+            list($h,$b) = explode("\r\n\r\n", $result);
+            return json_decode($b, true);
         }catch (\Exception $e){
             return ['message'=>$e->getMessage()];
         }
